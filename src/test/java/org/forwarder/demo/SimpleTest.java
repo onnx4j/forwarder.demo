@@ -43,8 +43,9 @@ public class SimpleTest extends TestCase {
 	 *            name of the test case
 	 * @throws IOException
 	 * @throws FileNotFoundException
+	 * @throws OperationNotSupportedException
 	 */
-	public SimpleTest(String testName) throws FileNotFoundException, IOException {
+	public SimpleTest(String testName) throws FileNotFoundException, IOException, OperationNotSupportedException {
 		super(testName);
 
 		String modelPath = URLDecoder.decode(SimpleTest.class.getResource("/simple/model.onnx").getFile(), "utf-8");
@@ -52,7 +53,7 @@ public class SimpleTest extends TestCase {
 
 		this.forwarder = Forwarder
 				.config(Config.builder().setDebug(true).setMemoryByteOrder(ByteOrder.LITTLE_ENDIAN).build())
-				.load(modelPath);
+				.load(modelPath).executor("recursion");
 		assert forwarder != null;
 	}
 

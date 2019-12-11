@@ -53,7 +53,7 @@ public abstract class ForwarderTestCase extends TestCase {
 
 		try (Forwarder forwarder = Forwarder
 				.config(Config.builder().setDebug(true).setMemoryByteOrder(ByteOrder.LITTLE_ENDIAN).build())
-				.load(absoluteModelPath)) {
+				.load(absoluteModelPath).executor("ray")) {
 			assert forwarder != null;
 			for (Entry<String, String> tensorPairPath : tensorPairPaths.entrySet()) {
 				Tensor inputTensor = this.loadTensor(forwarder, tensorPairPath.getKey());
@@ -69,7 +69,7 @@ public abstract class ForwarderTestCase extends TestCase {
 					Backend<?> backend = forwarder.backend(backendName);
 					try (Session<?> session = backend.newSession()) {
 						Tensor y0 = session.feed(inputName, inputTensor).forward().getOutput(outputName);
-						
+
 						logger.debug("Actual: {}", this.dumpTensor(y0));
 
 						this.assertSimilarity(y0, exceptedOutputTensor, 0.001f);
@@ -110,12 +110,11 @@ public abstract class ForwarderTestCase extends TestCase {
 		Tensor tensor = Tensor.toTensor(tensorProto, forwarder.getConfig().getTensorOptions());
 		return tensor;
 	}
-	
+
 	protected String dumpTensor(Tensor tensor) {
 		String tensorString = tensor.toString().replaceAll("[\n\t]", "");
 		return tensorString.length() > TENSOR_MAX_OUTPUT_LEN
-				? tensorString.subSequence(0, TENSOR_MAX_OUTPUT_LEN) + " ..."
-				: tensorString;
+				? tensorString.subSequence(0, TENSOR_MAX_OUTPUT_LEN) + " ..." : tensorString;
 	}
 
 }
