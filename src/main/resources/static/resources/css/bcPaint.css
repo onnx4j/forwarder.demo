@@ -1,0 +1,54 @@
+#bcPaint-container{
+  width: 100%;
+  height: 100%;
+}
+
+#bcPaint-header{
+  width: 100%;
+  height: 25px;
+}
+
+#bcPaint-palette{
+  text-align: center;
+}
+
+.bcPaint-palette-color{
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 15px;
+  margin: 0 5px;
+}
+
+#bcPaint-palette > .selected{
+  border: 2px solid #bdbdbd;
+  margin-bottom: -2px;
+}
+
+#bcPaint-canvas-container{
+  width: 100%;
+  height: calc(100% - 50px);
+}
+
+#bcPaint-canvas-container > canvas{
+  border: 1px solid #696969;
+}
+
+#bcPaint-bottom{
+  width: 100%;
+  height: 25px;
+  text-align: center;
+}
+
+#bcPaint-bottom > button{
+  background-color: #3e4e5a;
+  color: #ffffff;
+  text-transform: uppercase;
+  border: 0;
+  font-size: 10px;
+  padding: 5px 10px;
+  margin-left: 10px;
+  margin-top: 10px;
+  outline: none;
+}

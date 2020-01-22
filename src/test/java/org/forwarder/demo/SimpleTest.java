@@ -33,6 +33,7 @@ import org.forwarder.executor.impls.RecursionExecutor;
 import org.onnx4j.Tensor;
 import org.onnx4j.tensor.DataType;
 import org.onnx4j.tensor.Shape;
+import org.onnx4j.tensor.TensorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ import junit.framework.TestSuite;
  */
 public class SimpleTest extends TestCase {
 
-	private static final int LOOP_TIMES = 1000;
+	private static final int LOOP_TIMES = 1;
 
 	private static Logger logger = LoggerFactory.getLogger(SimpleTest.class);
 
@@ -93,53 +94,51 @@ public class SimpleTest extends TestCase {
 
 	/**
 	 * Using Tensorflow as backend for model forward
+	 * @throws Exception 
 	 * 
 	 * @throws IOException
 	 * @throws FileNotFoundException
-	 * @throws InvocationTargetException
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 * @throws SecurityException
-	 * @throws NoSuchMethodException
-	 * @throws OperationNotSupportedException
 	 */
 	public void testForwardUsingTFBackend()
-			throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException, OperationNotSupportedException {
-		this.testForward("Tensorflow");
+			throws Exception {
+		try (Forwarder f = this.forwarder) {
+			this.testForward("Tensorflow");
+		}
 	}
 
 	/**
 	 * Using Deeplearning4j as backend for model forward
+	 * @throws Exception 
 	 * 
 	 * @throws IOException
 	 * @throws FileNotFoundException
-	 * @throws InvocationTargetException
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 * @throws SecurityException
-	 * @throws NoSuchMethodException
-	 * @throws OperationNotSupportedException
 	 */
 	public void testForwardUsingDL4JBackend()
-			throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException, OperationNotSupportedException {
-		this.testForward("DL4J");
+			throws Exception {
+		try (Forwarder f = this.forwarder) {
+			this.testForward("DL4J");
+		}
 	}
 
 	private void testForward(String backendName)
-			throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException, OperationNotSupportedException {
+			throws Exception {
 		Backend<?> backend = this.forwarder.backend(backendName);
-
 		Stopwatch watch = Stopwatch.createStarted();
+		Tensor x2_0;
+		Tensor y0;
 		for (int m = 0; m < LOOP_TIMES; m++) {
 			try (Session<?> session = backend.newSession()) {
-				Tensor x2_0 = Tensor.builder(DataType.FLOAT, Shape.create(2L, 1L), Tensor.options()).putFloat(3f)
-						.putFloat(2f).build();
-				Tensor y0 = session.feed("x2:0", x2_0).forward().getOutput("y:0");
+				x2_0 = TensorBuilder
+						.builder(
+							DataType.FLOAT, 
+							Shape.create(2L, 1L), 
+							Tensor.options()
+						)
+						.name("x2:0")
+						.putFloat(3f)
+						.putFloat(2f)
+						.build();
+				y0 = session.feed(x2_0).forward().getOutput("y:0");
 
 				if (m < (LOOP_TIMES - 1))
 					continue;

@@ -1,0 +1,40 @@
+@media (max-width: 1024px){
+
+  #bcPaint-header{
+    height: 50px;
+    padding: 45px 0;
+    background-color: #f7f7f7;
+  }
+
+  #bcPaint-palette{
+    /* margin-top: 30px; */
+  }
+
+  .bcPaint-palette-color{
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    margin: 0 10px;
+  }
+
+  #bcPaint-canvas-container{
+    height: calc(100% - 291px);
+  }
+
+  #bcPaint-canvas-container > canvas{
+    border: 0;
+  }
+
+  #bcPaint-bottom{
+    height: 61px;
+    padding: 45px 0;
+    background-color: #f7f7f7;
+  }
+
+  #bcPaint-bottom > button{
+    font-size: 18px;
+    padding: 20px 50px;
+    margin: 0 50px;
+  }
+
+}

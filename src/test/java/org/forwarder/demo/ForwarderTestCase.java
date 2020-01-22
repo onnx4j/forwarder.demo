@@ -35,7 +35,8 @@ import org.forwarder.Forwarder;
 import org.forwarder.Session;
 import org.forwarder.executor.impls.RayExecutor;
 import org.onnx4j.Tensor;
-import org.onnx4j.onnx.prototypes.OnnxProto3.TensorProto;
+import org.onnx4j.prototypes.OnnxProto3.TensorProto;
+import org.onnx4j.tensor.TensorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public abstract class ForwarderTestCase extends TestCase {
 			String[] backendNames, float tolerance) throws FileNotFoundException, IOException, NoSuchMethodException,
 			SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, OperationNotSupportedException {
-		String absoluteModelPath = URLDecoder.decode(TinyYoloV2Test.class.getResource(modelPath).getFile(), "utf-8");
+		String absoluteModelPath = URLDecoder.decode(ForwarderTestCase.class.getResource(modelPath).getFile(), "utf-8");
 		assertNotNull(absoluteModelPath);
 
 		try (Forwarder forwarder = Forwarder
@@ -73,29 +74,35 @@ public abstract class ForwarderTestCase extends TestCase {
 				.load(absoluteModelPath).executor(RayExecutor.class)) {
 			assert forwarder != null;
 			for (Entry<String, String> tensorPairPath : tensorPairPaths.entrySet()) {
-				Tensor inputTensor = this.loadTensor(forwarder, tensorPairPath.getKey());
+				Tensor inputTensor = this.loadTensor(forwarder, inputName, tensorPairPath.getKey());
 				logger.debug("Loaded input tensor proto named \"{}\"", tensorPairPath.getKey());
 
-				Tensor exceptedOutputTensor = this.loadTensor(forwarder, tensorPairPath.getValue());
+				Tensor exceptedOutputTensor = this.loadTensor(forwarder, inputName, tensorPairPath.getValue());
 				logger.debug("Loaded input tensor proto named \"{}\"", tensorPairPath.getValue());
 
 				logger.debug("Input Tensor: {}", this.dumpTensor(inputTensor));
 				logger.debug("Excepted Tensor: {}", this.dumpTensor(exceptedOutputTensor));
 
 				for (String backendName : backendNames) {
+					for (int n = 0; n < 50; n++) {
 					Backend<?> backend = forwarder.backend(backendName);
 					try (Session<?> session = backend.newSession()) {
-						Tensor y0 = session.feed(inputName, inputTensor).forward().getOutput(outputName);
+						Tensor y0 = session.feed(inputTensor, false).forward().getOutput(outputName);
 
 						logger.debug("Actual: {}", this.dumpTensor(y0));
 
 						this.assertSimilarity(y0, exceptedOutputTensor, 0.001f);
 					}
+					}
 				}
+
+				inputTensor.close();
 			}
 		} catch (Exception e) {
 			logger.error("Failed to close forwarder instance", e);
 		}
+
+		logger.debug("Finished");
 	}
 
 	/**
@@ -119,13 +126,14 @@ public abstract class ForwarderTestCase extends TestCase {
 		}
 	}
 
-	protected Tensor loadTensor(Forwarder forwarder, String tensorProtoName)
-			throws InvalidProtocolBufferException, IOException {
+	protected Tensor loadTensor(Forwarder forwarder, String inputName, String tensorProtoName)
+			throws InvalidProtocolBufferException, IOException, NoSuchFieldException, SecurityException,
+			IllegalArgumentException, IllegalAccessException {
 		String tensorProtoPath = URLDecoder.decode(this.getClass().getResource(tensorProtoName).getFile(), "utf-8");
 		assertNotNull(tensorProtoPath);
 		TensorProto tensorProto = TensorProto.parseFrom(FileUtils.readFileToByteArray(new File(tensorProtoPath)));
-		Tensor tensor = Tensor.toTensor(tensorProto, forwarder.getConfig().getTensorOptions());
-		return tensor;
+		return TensorBuilder.builder(tensorProto, forwarder.getConfig().getTensorOptions())
+				.manager(forwarder.getModel().getTensorManager()).name(inputName).build();
 	}
 
 	protected String dumpTensor(Tensor tensor) {
