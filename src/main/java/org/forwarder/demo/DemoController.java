@@ -44,7 +44,6 @@ import sun.misc.BASE64Decoder;
 /**
  * @author HarryLee
  * @createdOn 2019年7月5日
- * @company 广州广之旅国际旅行社股份有限公司
  *
  */
 @Slf4j
