@@ -12,7 +12,6 @@ import org.springframework.context.annotation.PropertySource;
  * 
  * @author HarryLee
  * @createdOn 2019年7月10日
- * @company 广州广之旅国际旅行社股份有限公司
  *
  */
 @Configuration
